@@ -1,0 +1,68 @@
+# .gitignore for Projeto-Extensionista-Uninter
+# Covers Node, TypeScript, Vite (frontend), and backend build artifacts
+
+### Node & Package managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### Environment files (local secrets)
+.env
+.env.local
+.env.*.local
+
+### Logs and runtime files
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+### Build output
+/dist/
+/build/
+/out/
+
+### TypeScript
+*.tsbuildinfo
+
+### Coverage reports
+coverage/
+.nyc_output/
+
+### Frontend specifics (Vite/React)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
+/frontend/.cache/
+
+### Backend specifics
+/backend/node_modules/
+/backend/dist/
+/backend/build/
+
+### Editor and OS files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Caches & misc
+.cache/
+.parcel-cache/
+.eslintcache
+.sass-cache
+*.tgz
+
+### Test artifacts
+/playwright-report/
+/cypress/videos/
+/cypress/screenshots/
+
+# End of .gitignore
