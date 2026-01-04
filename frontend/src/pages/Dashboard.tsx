@@ -22,17 +22,15 @@ function Dashboard() {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
-        <h1>Painel do Professor</h1>
-        <button onClick={handleLogout} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '10px', cursor: 'pointer' }}>
-          Sair
-        </button>
+      <header className="bg-white shadow p-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold text-blue-600">TecnoGuia - Painel</h1>
+        <button onClick={handleLogout} className="text-red-500 font-bold hover:underline">Sair</button>
       </header>
 
       <main style={{ marginTop: '20px' }}>
         <h2>Bem-vindo ao AtivaMente!</h2>
         <p>Aqui você poderá criar e gerenciar seus roteiros de estudo.</p>
-        
+
         {/* Futuramente aqui entrará a lista de roteiros */}
         <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
           <p>Nenhum roteiro criado ainda.</p>

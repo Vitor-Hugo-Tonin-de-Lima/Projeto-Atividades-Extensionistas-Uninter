@@ -64,7 +64,8 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-8">AtivaMente</h2>
+        <h2 className="text-3xl font-bold text-center text-blue-600 mb-8">TecnoGuia</h2>
+
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input

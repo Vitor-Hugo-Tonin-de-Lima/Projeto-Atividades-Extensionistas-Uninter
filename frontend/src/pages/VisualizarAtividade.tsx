@@ -94,12 +94,15 @@ function VisualizarAtividade() {
                     <h2 className="text-3xl font-bold text-gray-900">{topicoAtual.subtitulo || "Sem subtítulo"}</h2>
 
                     {topicoAtual.imagemUrl && (
-                        <img
-                            src={topicoAtual.imagemUrl}
-                            alt={topicoAtual.subtitulo}
-                            className="w-full h-64 object-cover rounded-xl shadow-sm"
-                        />
+                        <div className="flex justify-center bg-gray-50 rounded-xl p-2 border border-gray-100">
+                            <img
+                                src={topicoAtual.imagemUrl}
+                                alt={topicoAtual.subtitulo}
+                                className="max-w-full h-auto max-h-[600px] object-contain rounded shadow-sm"
+                            />
+                        </div>
                     )}
+
 
                     <div className="prose prose-lg max-w-none text-gray-700 bg-gray-50 p-6 rounded-xl border border-gray-100">
                         {/* Aqui usamos o nosso componente mágico */}
