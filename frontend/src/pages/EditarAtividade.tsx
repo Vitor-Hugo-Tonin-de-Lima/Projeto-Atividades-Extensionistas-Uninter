@@ -23,6 +23,12 @@ function EditarAtividade() {
   const [atividade, setAtividade] = useState<Atividade | null>(null);
   const [abaAtiva, setAbaAtiva] = useState(0);
   const [carregando, setCarregando] = useState(true);
+  const [notification, setNotification] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
+
+  const showNotification = (msg: string, type: 'success' | 'error') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -86,7 +92,6 @@ function EditarAtividade() {
     if (!atividade) return;
 
     try {
-      // Mapeia de volta para o formato do Backend
       const payload = {
         title: atividade.titulo,
         description: atividade.descricao || "Descrição automática",
@@ -98,22 +103,20 @@ function EditarAtividade() {
       };
 
       await axios.put(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, payload, getAuthHeader());
-      alert("Atividade salva com sucesso!");
-      navigate('/atividades');
+      showNotification("Atividade salva com sucesso!", 'success');
+      setTimeout(() => navigate('/atividades'), 1000); // Pequeno delay para ler a msg
     } catch (error) {
       console.error("Erro ao salvar:", error);
-      alert("Erro ao salvar atividade.");
+      showNotification("Erro ao salvar atividade.", 'error');
     }
   };
 
   if (carregando) return <div className="p-10 text-center">Carregando editor...</div>;
   if (!atividade) return <div className="p-10 text-center text-red-500">Erro: Atividade não encontrada.</div>;
 
-  // Renderiza tópicos se houver
   const topicoAtual = atividade.topicos[abaAtiva];
 
   if (!topicoAtual && atividade.topicos.length > 0) {
-    // Correção caso abaAtiva esteja fora de índice
     setAbaAtiva(0);
     return null;
   }
@@ -121,6 +124,11 @@ function EditarAtividade() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+      {/* ... Header and other UI ... */}
+
+      {/* ... Main content ... */}
+
+      {/* Render existing UI until footer */}
       <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
         <label className="text-xs text-gray-500 font-bold uppercase">Título da Atividade</label>
         <input
@@ -199,8 +207,16 @@ function EditarAtividade() {
         <button onClick={() => navigate('/atividades')} className="text-gray-500">Cancelar</button>
         <button onClick={salvarAlteracoes} className="bg-green-600 text-white px-6 py-2 rounded-full font-bold">Salvar Alterações</button>
       </footer>
+
+      {/* Notificação Toast */}
+      {notification && (
+        <div className={`fixed bottom-20 right-4 px-6 py-3 rounded shadow-lg text-white font-bold transition-all transform z-50 ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {notification.msg}
+        </div>
+      )}
     </div>
   );
+
 }
 
 export default EditarAtividade;

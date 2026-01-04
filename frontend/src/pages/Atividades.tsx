@@ -132,8 +132,8 @@ function Atividades() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-xl font-bold text-gray-800">{atividade.titulo}</h3>
-                    <p className="text-gray-600 mt-1">{atividade.descricao}</p>
                     <p className="text-sm text-gray-400 mt-2">Criado em: {atividade.dataCriacao}</p>
+
                   </div>
 
                   {/* Botões de Ação */}
@@ -151,8 +151,9 @@ function Atividades() {
                       onClick={() => {
                         const url = `${window.location.origin}/atividade/visualizar/${atividade.id}`;
                         navigator.clipboard.writeText(url);
-                        alert("Link copiado para a área de transferência!");
+                        showNotification("Link copiado para a área de transferência!", 'success');
                       }}
+
                       className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-3 py-1 rounded text-sm font-medium"
                       title="Copiar link para alunos"
                     >
