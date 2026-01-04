@@ -49,7 +49,10 @@ function VisualizarAtividade() {
             <header className="bg-blue-600 text-white p-4 shadow-md">
                 <div className="max-w-4xl mx-auto flex justify-between items-center">
                     <h1 className="text-xl font-bold">{atividade.titulo}</h1>
-                    <Link to="/atividades" className="text-blue-100 hover:text-white text-sm">Voltar</Link>
+                    {localStorage.getItem('token') && (
+                        <Link to="/atividades" className="text-blue-100 hover:text-white text-sm">Voltar</Link>
+                    )}
+
                 </div>
             </header>
 
@@ -61,8 +64,8 @@ function VisualizarAtividade() {
                             key={topico.id}
                             onClick={() => setTopicoAtivo(idx)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${topicoAtivo === idx
-                                    ? 'bg-blue-100 text-blue-800 border-blue-200 border'
-                                    : 'text-gray-500 hover:bg-gray-100'
+                                ? 'bg-blue-100 text-blue-800 border-blue-200 border'
+                                : 'text-gray-500 hover:bg-gray-100'
                                 }`}
                         >
                             {idx + 1}. {topico.subtitulo}
