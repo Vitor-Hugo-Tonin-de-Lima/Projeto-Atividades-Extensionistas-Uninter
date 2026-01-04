@@ -43,7 +43,7 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
     }
 
     return (
-        <div className="leading-relaxed">
+        <div className="leading-relaxed whitespace-pre-wrap">
             {parts.map((part, index) => {
                 if (part.type === 'text') {
                     return <span key={index}>{part.content}</span>;
@@ -59,6 +59,7 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
             })}
         </div>
     );
+
 };
 
 const GlossaryItem = ({ term, description }: { term: string; description: string }) => {
