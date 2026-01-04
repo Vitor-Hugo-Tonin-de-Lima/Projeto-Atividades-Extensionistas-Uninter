@@ -30,8 +30,9 @@ function Login() {
 
       const resposta = await axios.post<LoginResponse>(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         email: email,
-        senha: senha
+        password: senha
       });
+
 
       console.log("Login sucesso!", resposta.data);
 

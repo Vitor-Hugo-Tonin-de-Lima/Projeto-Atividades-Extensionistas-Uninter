@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 import GlossaryText from '../components/GlossaryText';
+
 
 interface Topico {
     id: number;
@@ -22,21 +24,35 @@ function VisualizarAtividade() {
     const [topicoAtivo, setTopicoAtivo] = useState(0);
 
     useEffect(() => {
-        // Carrega do DB centralizado
-        const db = localStorage.getItem('atividades_db');
-        if (db) {
-            const lista: Atividade[] = JSON.parse(db);
-            const alvo = lista.find(a => a.id === Number(id));
-            if (alvo) {
-                setAtividade(alvo);
-                setCarregando(false);
-                return;
-            }
-        }
+        const carregarAtividade = async () => {
+            try {
+                // Busca do Backend via API (pública ou privada)
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/activities/${id}`);
+                const dados = response.data;
 
-        // Se não achar (e não for erro de carregamento), apenas finaliza carregamento
-        setCarregando(false);
+                // Mapeia do formato do Backend (steps) para o Frontend (topicos)
+                const atividadeFormatada: Atividade = {
+                    id: dados._id,
+                    titulo: dados.title,
+                    topicos: dados.steps.map((step: any, index: number) => ({
+                        id: index, // O ID do step no backend é _id, mas aqui usamos index simples para seleção de aba
+                        subtitulo: step.title,
+                        conteudo: step.instructions,
+                        imagemUrl: step.imageUrl
+                    }))
+                };
+
+                setAtividade(atividadeFormatada);
+                setCarregando(false);
+            } catch (error) {
+                console.error("Erro ao carregar atividade:", error);
+                setCarregando(false);
+            }
+        };
+
+        carregarAtividade();
     }, [id]);
+
 
     if (carregando) return <div className="p-10 text-center text-gray-500">Carregando atividade...</div>;
     if (!atividade) return <div className="p-10 text-center text-red-500">Atividade não encontrada.</div>;

@@ -8,14 +8,32 @@ interface Atividade {
   dataCriacao: string;
 }
 
+import axios from 'axios';
+
 function Atividades() {
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const navigate = useNavigate();
 
-  const carregarAtividades = () => {
-    const db = localStorage.getItem('atividades_db');
-    if (db) {
-      setAtividades(JSON.parse(db));
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
+  const carregarAtividades = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/activities`, getAuthHeader());
+      // Mapeia do formato do Backend (steps) para o Frontend (Atividade)
+      // O backend retorna: { _id, title, description, createdAt, ... }
+      const listaMapeada = response.data.map((item: any) => ({
+        id: item._id, // MongoDB string
+        titulo: item.title,
+        descricao: item.description,
+        dataCriacao: new Date(item.createdAt).toLocaleDateString('pt-BR')
+      }));
+      setAtividades(listaMapeada);
+    } catch (error) {
+      console.error("Erro ao carregar atividades:", error);
+      // Se erro 401, redirecionar login?
     }
   };
 
@@ -23,32 +41,44 @@ function Atividades() {
     carregarAtividades();
   }, []);
 
-  const criarNovaAtividade = () => {
-    const novaAtividade = {
-      id: Date.now(), // ID único simples (timestamp)
-      titulo: "Nova Atividade",
-      descricao: "Descrição curta sobre a atividade...",
-      dataCriacao: new Date().toLocaleDateString('pt-BR'),
-      topicos: [
-        { id: 1, subtitulo: "Introdução", conteudo: "Comece a editar aqui...", imagemUrl: "" }
-      ]
-    };
+  const criarNovaAtividade = async () => {
+    try {
+      const novaAtividadePre = {
+        title: "Nova Atividade",
+        description: "Descrição da atividade...",
+        content: "Conteúdo principal",
+        steps: [
+          { title: "Introdução", instructions: "Comece a editar aqui..." }
+        ]
+      };
 
-    // Salvar no DB global
-    const novasAtividades = [...atividades, novaAtividade];
-    localStorage.setItem('atividades_db', JSON.stringify(novasAtividades));
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/activities`,
+        novaAtividadePre,
+        getAuthHeader()
+      );
 
-    // Redireciona para editar essa nova atividade
-    navigate(`/atividade/editar/${novaAtividade.id}`);
-  };
-
-  const excluirAtividade = (id: number) => {
-    if (window.confirm("Tem certeza que deseja excluir esta atividade?")) {
-      const novasAtividades = atividades.filter(a => a.id !== id);
-      localStorage.setItem('atividades_db', JSON.stringify(novasAtividades));
-      setAtividades(novasAtividades);
+      const novoId = response.data._id;
+      navigate(`/atividade/editar/${novoId}`);
+    } catch (error) {
+      console.error("Erro ao criar atividade:", error);
+      alert("Erro ao criar nova atividade.");
     }
   };
+
+  const excluirAtividade = async (id: number) => {
+    if (window.confirm("Tem certeza que deseja excluir esta atividade?")) {
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, getAuthHeader());
+        // Recarrega lista
+        carregarAtividades();
+      } catch (error) {
+        console.error("Erro ao excluir:", error);
+        alert("Erro ao excluir atividade.");
+      }
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">

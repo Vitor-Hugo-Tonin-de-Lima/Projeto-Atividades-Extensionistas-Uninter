@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface Topico {
-  id: number;
+  id: number | string;
   subtitulo: string;
   conteudo: string;
   imagemUrl?: string;
 }
 
 interface Atividade {
-  id: number;
+  id: string;
   titulo: string;
   descricao?: string;
   topicos: Topico[];
@@ -23,20 +24,36 @@ function EditarAtividade() {
   const [abaAtiva, setAbaAtiva] = useState(0);
   const [carregando, setCarregando] = useState(true);
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
   useEffect(() => {
-    // Carrega do DB centralizado
-    const db = localStorage.getItem('atividades_db');
-    if (db) {
-      const lista: Atividade[] = JSON.parse(db);
-      const alvo = lista.find(a => a.id === Number(id));
-      if (alvo) {
-        setAtividade(alvo);
+    const carregar = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, getAuthHeader());
+        const dados = response.data;
+
+        const atividadeMapeada: Atividade = {
+          id: dados._id,
+          titulo: dados.title,
+          descricao: dados.description,
+          topicos: dados.steps ? dados.steps.map((s: any, idx: number) => ({
+            id: s._id || idx,
+            subtitulo: s.title,
+            conteudo: s.instructions,
+            imagemUrl: s.imageUrl
+          })) : []
+        };
+        setAtividade(atividadeMapeada);
         setCarregando(false);
-        return;
+      } catch (error) {
+        console.error("Erro ao carregar:", error);
+        setCarregando(false);
       }
-    }
-    // Se não achar, não faz nada (ou poderia redirecionar)
-    setCarregando(false);
+    };
+    if (id) carregar();
   }, [id]);
 
   const adicionarTopico = () => {
@@ -65,28 +82,32 @@ function EditarAtividade() {
     }
   }
 
-  const salvarAlteracoes = () => {
+  const salvarAlteracoes = async () => {
     if (!atividade) return;
 
-    // Atualiza no DB centralizado
-    const db = localStorage.getItem('atividades_db');
-    if (db) {
-      const lista: Atividade[] = JSON.parse(db);
-      const index = lista.findIndex(a => a.id === Number(id));
+    try {
+      // Mapeia de volta para o formato do Backend
+      const payload = {
+        title: atividade.titulo,
+        description: atividade.descricao || "Descrição automática",
+        steps: atividade.topicos.map(t => ({
+          title: t.subtitulo,
+          instructions: t.conteudo,
+          imageUrl: t.imagemUrl
+        }))
+      };
 
-      if (index !== -1) {
-        lista[index] = atividade;
-        localStorage.setItem('atividades_db', JSON.stringify(lista));
-        alert("Atividade salva com sucesso!");
-        navigate('/atividades');
-      } else {
-        alert("Erro: Atividade original não encontrada.");
-      }
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, payload, getAuthHeader());
+      alert("Atividade salva com sucesso!");
+      navigate('/atividades');
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar atividade.");
     }
   };
 
   if (carregando) return <div className="p-10 text-center">Carregando editor...</div>;
-  if (!atividade) return <div className="p-10 text-center text-red-500">Erro: Atividade não encontrada no banco de dados.</div>;
+  if (!atividade) return <div className="p-10 text-center text-red-500">Erro: Atividade não encontrada.</div>;
 
   // Renderiza tópicos se houver
   const topicoAtual = atividade.topicos[abaAtiva];
@@ -96,6 +117,7 @@ function EditarAtividade() {
     setAbaAtiva(0);
     return null;
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">

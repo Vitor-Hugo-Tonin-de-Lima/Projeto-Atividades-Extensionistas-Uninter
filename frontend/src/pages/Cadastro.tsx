@@ -14,11 +14,13 @@ function Cadastro() {
     e.preventDefault();
     setCarregando(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/registro`, {
-        nome,
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+        name: nome,
         email,
-        senha
+        password: senha,
+        role: 'teacher'
       });
+
       alert("Cadastro realizado com sucesso! Faça login.");
       navigate('/'); // Manda para o login
     } catch (error: any) {

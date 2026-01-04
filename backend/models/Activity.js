@@ -9,7 +9,9 @@ const stepSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  imageUrl: String,
   codeExample: String,
+
   expectedResult: String,
   hints: [String]
 });
@@ -54,7 +56,7 @@ const activitySchema = new mongoose.Schema({
   }
 });
 
-activitySchema.pre('save', function(next) {
+activitySchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
