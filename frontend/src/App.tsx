@@ -5,6 +5,8 @@ import Cadastro from './pages/Cadastro';
 import Recuperarsenha from './pages/Recuperarsenha';
 import Atividades from './pages/Atividades';
 import EditarAtividade from './pages/EditarAtividade';
+import VisualizarAtividade from './pages/VisualizarAtividade';
+
 
 function App() {
   return (
@@ -14,9 +16,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<Recuperarsenha />} />
-        <Route path="/editar-atividade/:id" element={<EditarAtividade />} />
+        <Route path="/atividade/editar/:id" element={<EditarAtividade />} />
+        <Route path="/atividade/visualizar/:id" element={<VisualizarAtividade />} />
         <Route path="/atividades" element={<Atividades />} />
-        
+
+
       </Routes>
     </Router>
   );
