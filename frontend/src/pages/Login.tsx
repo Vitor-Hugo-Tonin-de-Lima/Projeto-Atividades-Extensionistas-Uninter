@@ -45,8 +45,14 @@ function Login() {
       // No TypeScript, o erro no catch é 'unknown'. Precisamos verificar se é do Axios.
       if (axios.isAxiosError(error)) {
         // Agora o TS sabe que 'error' tem a propriedade 'response'
-        setErro(error.response?.data?.msg || "Erro ao conectar com o servidor.");
+        const msgServidor = error.response?.data?.msg;
+        const msgErro = error.response
+          ? `Erro ${error.response.status}: ${msgServidor || error.message}`
+          : `Erro de Conexão: ${error.message}. Verifique a URL da API.`;
+
+        setErro(msgErro);
       } else {
+
         setErro("Erro desconhecido.");
         console.error(error);
       }
