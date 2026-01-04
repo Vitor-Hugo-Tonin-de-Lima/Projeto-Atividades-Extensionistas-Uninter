@@ -78,11 +78,7 @@ function Login() {
             disabled={carregando}
           />
 
-          <div className="text-right">
-            <Link to="/recuperar-senha" className="text-sm text-blue-500 hover:underline">
-              Esqueceu a senha?
-            </Link>
-          </div>
+
 
           <button
             type="submit"

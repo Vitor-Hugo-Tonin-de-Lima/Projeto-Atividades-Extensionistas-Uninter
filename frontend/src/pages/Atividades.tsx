@@ -13,6 +13,10 @@ import axios from 'axios';
 function Atividades() {
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState<number | null>(null);
+  const [notification, setNotification] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
+
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -41,6 +45,11 @@ function Atividades() {
     carregarAtividades();
   }, []);
 
+  const showNotification = (msg: string, type: 'success' | 'error') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   const criarNovaAtividade = async () => {
     try {
       const novaAtividadePre = {
@@ -63,23 +72,31 @@ function Atividades() {
     } catch (error: any) {
       console.error("Erro ao criar atividade:", error);
       const msg = error.response?.data?.error || error.response?.data?.msg || error.message;
-      alert(`Erro ao criar nova atividade: ${msg}`);
-    }
-
-  };
-
-  const excluirAtividade = async (id: number) => {
-    if (window.confirm("Tem certeza que deseja excluir esta atividade?")) {
-      try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/activities/${id}`, getAuthHeader());
-        // Recarrega lista
-        carregarAtividades();
-      } catch (error) {
-        console.error("Erro ao excluir:", error);
-        alert("Erro ao excluir atividade.");
-      }
+      showNotification(`Erro ao criar: ${msg}`, 'error');
     }
   };
+
+  const confirmarExclusao = (id: number) => {
+    setActivityToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const executarExclusao = async () => {
+    if (!activityToDelete) return;
+
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/activities/${activityToDelete}`, getAuthHeader());
+      carregarAtividades();
+      showNotification("Atividade excluída com sucesso!", 'success');
+    } catch (error) {
+      console.error("Erro ao excluir:", error);
+      showNotification("Erro ao excluir atividade.", 'error');
+    } finally {
+      setShowDeleteModal(false);
+      setActivityToDelete(null);
+    }
+  };
+
 
 
   return (
@@ -152,7 +169,7 @@ function Atividades() {
 
                     {/* Botão de Excluir */}
                     <button
-                      onClick={() => excluirAtividade(atividade.id)}
+                      onClick={() => confirmarExclusao(atividade.id)}
                       className="text-red-500 hover:text-red-700 font-medium text-sm px-2">
                       Excluir
                     </button>
@@ -163,9 +180,41 @@ function Atividades() {
           )}
         </div>
 
+        {/* Modal de Confirmação de Exclusão */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+              <h3 className="text-xl font-bold mb-4">Confirmar Exclusão</h3>
+              <p className="mb-6 text-gray-600">Tem certeza que deseja excluir esta atividade? Esta ação não pode ser desfeita.</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700 rounded"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={executarExclusao}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notificação Toast */}
+        {notification && (
+          <div className={`fixed bottom-4 right-4 px-6 py-3 rounded shadow-lg text-white font-bold transition-all transform ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            {notification.msg}
+          </div>
+        )}
+
       </main>
     </div>
   );
+
 }
 
 export default Atividades;
