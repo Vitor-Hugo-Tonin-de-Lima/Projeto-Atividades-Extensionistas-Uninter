@@ -88,8 +88,24 @@ function EditarAtividade() {
     }
   }
 
+  const removerTopico = (index: number) => {
+    if (!atividade) return;
+    const novosTopicos = atividade.topicos.filter((_, i) => i !== index);
+    setAtividade({ ...atividade, topicos: novosTopicos });
+    if (abaAtiva >= novosTopicos.length) {
+      setAbaAtiva(Math.max(0, novosTopicos.length - 1));
+    }
+  };
+
   const salvarAlteracoes = async () => {
     if (!atividade) return;
+
+    // Validação de tópicos vazios
+    const temTopicosVazios = atividade.topicos.some(t => !t.subtitulo.trim() || !t.conteudo.trim());
+    if (temTopicosVazios) {
+      showNotification("Existem tópicos sem nenhum conteúdo (título ou texto).", 'error');
+      return;
+    }
 
     try {
       const payload = {
@@ -162,15 +178,25 @@ function EditarAtividade() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="mb-4">
-              <label className="block text-sm font-bold text-gray-700">Subtítulo do Tópico</label>
-              <input
-                type="text"
-                value={topicoAtual.subtitulo}
-                onChange={(e) => atualizarTopico('subtitulo', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-50"
-              />
+            <div className="flex justify-between items-end mb-4">
+              <div className="w-full mr-4">
+                <label className="block text-sm font-bold text-gray-700">Subtítulo do Tópico</label>
+                <input
+                  type="text"
+                  value={topicoAtual.subtitulo}
+                  onChange={(e) => atualizarTopico('subtitulo', e.target.value)}
+                  className="w-full p-2 border rounded bg-gray-50"
+                />
+              </div>
+              <button
+                onClick={() => removerTopico(abaAtiva)}
+                className="bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 rounded font-medium text-sm h-10 mb-0.5"
+                title="Excluir este tópico"
+              >
+                Excluir
+              </button>
             </div>
+
 
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
