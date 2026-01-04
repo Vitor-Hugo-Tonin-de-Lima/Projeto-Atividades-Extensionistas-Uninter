@@ -37,7 +37,8 @@ function Login() {
 
       localStorage.setItem('token', resposta.data.token);
 
-      navigate('/dashboard');
+      navigate('/atividades');
+
 
     } catch (error) {
       // No TypeScript, o erro no catch é 'unknown'. Precisamos verificar se é do Axios.

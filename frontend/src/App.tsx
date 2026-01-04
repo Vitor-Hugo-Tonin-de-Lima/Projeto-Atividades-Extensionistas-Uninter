@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+
 import Cadastro from './pages/Cadastro';
 import Recuperarsenha from './pages/Recuperarsenha';
 import Atividades from './pages/Atividades';
@@ -13,7 +13,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<Recuperarsenha />} />
         <Route path="/atividade/editar/:id" element={<EditarAtividade />} />
