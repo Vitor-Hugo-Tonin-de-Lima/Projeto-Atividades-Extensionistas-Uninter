@@ -60,10 +60,12 @@ function Atividades() {
 
       const novoId = response.data._id;
       navigate(`/atividade/editar/${novoId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao criar atividade:", error);
-      alert("Erro ao criar nova atividade.");
+      const msg = error.response?.data?.error || error.response?.data?.msg || error.message;
+      alert(`Erro ao criar nova atividade: ${msg}`);
     }
+
   };
 
   const excluirAtividade = async (id: number) => {

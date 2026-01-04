@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 // Função para gerar JWT Token
 const signToken = (userId, role) => {
   return jwt.sign(
-    { userId, role }, 
-    process.env.JWT_SECRET, 
+    { userId, role },
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
@@ -67,7 +67,7 @@ export const register = async (req, res) => {
 
   } catch (error) {
     console.error('Erro no registro:', error);
-    
+
     // Erro de validação do Mongoose
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(el => el.message);
@@ -114,8 +114,9 @@ export const login = async (req, res) => {
     if (!user || !(await user.correctPassword(password))) {
       return res.status(401).json({
         success: false,
-        error: 'Email ou senha incorretos'
+        msg: 'Email ou senha incorretos'
       });
+
     }
 
     // 3) Se tudo ok, enviar token para o cliente
@@ -136,7 +137,7 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    
+
     res.status(200).json({
       success: true,
       user: {
@@ -162,11 +163,11 @@ export const getMe = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { name, email } = req.body;
-    
+
     const user = await User.findByIdAndUpdate(
       req.user.userId,
       { name, email },
-      { 
+      {
         new: true, // Retorna o documento atualizado
         runValidators: true // Executa validações do schema
       }
@@ -184,14 +185,14 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);
-    
+
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
         error: 'Já existe um usuário com este email'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       error: 'Erro ao atualizar dados do usuário'
