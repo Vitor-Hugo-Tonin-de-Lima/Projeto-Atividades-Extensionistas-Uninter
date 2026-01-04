@@ -1,6 +1,7 @@
 // frontend/src/pages/Login.tsx
 import { useState } from 'react';
-import axios, { AxiosError } from 'axios'; // Importamos o tipo de erro
+import axios from 'axios'; // Importamos o tipo de erro
+
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
@@ -9,7 +10,7 @@ function Login() {
   const [email, setEmail] = useState<string>('');
   const [senha, setSenha] = useState<string>('');
   const [erro, setErro] = useState<string>('');
-  
+
   const navigate = useNavigate();
 
   // Tipamos o evento como um evento de formulário HTML
@@ -30,10 +31,10 @@ function Login() {
       });
 
       console.log("Login sucesso!", resposta.data);
-      
+
       localStorage.setItem('token', resposta.data.token);
-      
-      navigate('/dashboard'); 
+
+      navigate('/dashboard');
 
     } catch (error) {
       // No TypeScript, o erro no catch é 'unknown'. Precisamos verificar se é do Axios.
@@ -51,13 +52,13 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-3xl font-bold text-center text-blue-600 mb-8">AtivaMente</h2>
-        
+
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <input 
+          <input
             type="email" placeholder="Seu E-mail" value={email} onChange={(e) => setEmail(e.target.value)}
             className="p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required
           />
-          <input 
+          <input
             type="password" placeholder="Sua Senha" value={senha} onChange={(e) => setSenha(e.target.value)}
             className="p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required
           />
