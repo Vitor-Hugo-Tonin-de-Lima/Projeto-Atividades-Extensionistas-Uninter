@@ -7,16 +7,25 @@ const router = express.Router();
 // Criar atividade (apenas professores)
 router.post('/', authenticate, requireTeacher, async (req, res) => {
   try {
+    console.log("Tentativa de criação de atividade.");
+    // req.user vem do middleware 'authenticate' e tem a estrutura: { userId, role }
+    console.log("Usuário autenticado:", req.user);
+    console.log("Payload recebido:", req.body);
+
     const activity = new Activity({
       ...req.body,
-      createdBy: req.user._id
+      createdBy: req.user.userId
     });
 
     await activity.save();
-    await activity.populate('createdBy', 'name email');
+
+    // Populate user details for response if needed
+    // await activity.populate('createdBy', 'name email'); 
+    // note: populate might fail if createdBy is just ID string in memory before refetch, but usually ok.
 
     res.status(201).json(activity);
   } catch (error) {
+    console.error("Erro no POST /activities:", error);
     res.status(500).json({ error: 'Erro ao criar atividade.' });
   }
 });
@@ -28,18 +37,19 @@ router.get('/', authenticate, async (req, res) => {
 
     if (req.user.role === 'teacher') {
       // Professor vê atividades que criou
-      activities = await Activity.find({ createdBy: req.user._id })
+      activities = await Activity.find({ createdBy: req.user.userId })
         .populate('students', 'name email')
         .sort({ createdAt: -1 });
     } else {
       // Aluno vê atividades atribuídas a ele
-      activities = await Activity.find({ students: req.user._id })
+      activities = await Activity.find({ students: req.user.userId })
         .populate('createdBy', 'name email')
         .sort({ createdAt: -1 });
     }
 
     res.json(activities);
   } catch (error) {
+    console.error("Erro no GET /activities:", error);
     res.status(500).json({ error: 'Erro ao buscar atividades.' });
   }
 });
@@ -49,16 +59,14 @@ router.get('/:id', async (req, res) => {
   try {
     const activity = await Activity.findById(req.params.id)
       .populate('createdBy', 'name email');
-    //.populate('students', 'name email'); // Removido para privacidade em acesso público
 
     if (!activity) {
       return res.status(404).json({ error: 'Atividade não encontrada.' });
     }
 
-    // Permite acesso público para visualização
-    // Permite acesso público para visualização
     res.json(activity);
   } catch (error) {
+    console.error("Erro no GET /activities/:id", error);
     res.status(500).json({ error: 'Erro ao buscar atividade.' });
   }
 });
@@ -66,7 +74,7 @@ router.get('/:id', async (req, res) => {
 // Atualizar atividade (apenas professor criador)
 router.put('/:id', authenticate, requireTeacher, async (req, res) => {
   try {
-    const activity = await Activity.findOne({ _id: req.params.id, createdBy: req.user._id });
+    const activity = await Activity.findOne({ _id: req.params.id, createdBy: req.user.userId });
     if (!activity) {
       return res.status(404).json({ error: 'Atividade não encontrada ou sem permissão.' });
     }
@@ -81,6 +89,7 @@ router.put('/:id', authenticate, requireTeacher, async (req, res) => {
     await activity.save();
     res.json(activity);
   } catch (error) {
+    console.error("Erro no PUT /activities/:id", error);
     res.status(500).json({ error: 'Erro ao atualizar atividade.' });
   }
 });
@@ -88,17 +97,16 @@ router.put('/:id', authenticate, requireTeacher, async (req, res) => {
 // Deletar atividade (apenas professor criador)
 router.delete('/:id', authenticate, requireTeacher, async (req, res) => {
   try {
-    const activity = await Activity.findOneAndDelete({ _id: req.params.id, createdBy: req.user._id });
+    const activity = await Activity.findOneAndDelete({ _id: req.params.id, createdBy: req.user.userId });
     if (!activity) {
       return res.status(404).json({ error: 'Atividade não encontrada ou sem permissão.' });
     }
     res.json({ message: 'Atividade excluída com sucesso.' });
   } catch (error) {
+    console.error("Erro no DELETE /activities/:id", error);
     res.status(500).json({ error: 'Erro ao deletar atividade.' });
   }
 });
-
-
 
 // Adicionar aluno à atividade (professor)
 router.post('/:id/students', authenticate, requireTeacher, async (req, res) => {
@@ -106,7 +114,7 @@ router.post('/:id/students', authenticate, requireTeacher, async (req, res) => {
     const { studentId } = req.body;
     const activity = await Activity.findOne({
       _id: req.params.id,
-      createdBy: req.user._id
+      createdBy: req.user.userId
     });
 
     if (!activity) {
@@ -122,6 +130,7 @@ router.post('/:id/students', authenticate, requireTeacher, async (req, res) => {
     await activity.populate('students', 'name email');
     res.json(activity);
   } catch (error) {
+    console.error("Erro no POST /activities/:id/students", error);
     res.status(500).json({ error: 'Erro ao adicionar aluno.' });
   }
 });
