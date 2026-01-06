@@ -43,7 +43,7 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
     }
 
     return (
-        <div className="leading-relaxed whitespace-pre-wrap break-words break-all">
+        <div className="leading-relaxed whitespace-pre-wrap break-words">
             {parts.map((part, index) => {
                 if (part.type === 'text') {
                     return <span key={index}>{part.content}</span>;
