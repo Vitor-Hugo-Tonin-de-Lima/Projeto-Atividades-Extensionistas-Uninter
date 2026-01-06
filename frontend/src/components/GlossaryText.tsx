@@ -5,26 +5,24 @@ interface GlossaryTextProps {
 }
 
 const GlossaryText = ({ content }: GlossaryTextProps) => {
+    // Normalize newlines to \n to ensure consistent behavior
+    const normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
     // Regex to match {{term::description}}
-    // Non-greedy capture for term and description
     const regex = /\{\{(.*?)::(.*?)\}\}/g;
 
     const parts = [];
     let lastIndex = 0;
     let match;
 
-    // Loop through all matches
-    // eslint-disable-next-line no-cond-assign
-    while ((match = regex.exec(content)) !== null) {
-        // Push text before the match
+    while ((match = regex.exec(normalizedContent)) !== null) {
         if (match.index > lastIndex) {
             parts.push({
                 type: 'text',
-                content: content.slice(lastIndex, match.index),
+                content: normalizedContent.slice(lastIndex, match.index),
             });
         }
 
-        // Push the glossary term
         parts.push({
             type: 'glossary',
             term: match[1],
@@ -34,23 +32,33 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
         lastIndex = regex.lastIndex;
     }
 
-    // Push remaining text
-    if (lastIndex < content.length) {
+    if (lastIndex < normalizedContent.length) {
         parts.push({
             type: 'text',
-            content: content.slice(lastIndex),
+            content: normalizedContent.slice(lastIndex),
         });
     }
 
     return (
-        <div className="leading-relaxed whitespace-pre-wrap break-words">
+        <div className="leading-relaxed break-words text-gray-800">
             {parts.map((part, index) => {
                 if (part.type === 'text') {
-                    return <span key={index}>{part.content}</span>;
+                    // Split text by newlines and render with <br/> to guarantee line breaks work
+                    const lines = part.content!.split('\n');
+                    return (
+                        <span key={`text-${index}-${part.content!.substring(0, 10)}`}>
+                            {lines.map((line, lineIdx) => (
+                                <span key={lineIdx}>
+                                    {line}
+                                    {lineIdx < lines.length - 1 && <br />}
+                                </span>
+                            ))}
+                        </span>
+                    );
                 } else {
                     return (
                         <GlossaryItem
-                            key={index}
+                            key={`glossary-${index}-${part.term}`}
                             term={part.term!}
                             description={part.description!}
                         />
@@ -59,7 +67,6 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
             })}
         </div>
     );
-
 };
 
 const GlossaryItem = ({ term, description }: { term: string; description: string }) => {
