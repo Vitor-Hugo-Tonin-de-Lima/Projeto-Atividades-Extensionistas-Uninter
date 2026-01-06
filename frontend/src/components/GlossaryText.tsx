@@ -8,8 +8,8 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
     // Normalize newlines to \n to ensure consistent behavior
     const normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-    // Regex to match {{term::description}}
-    const regex = /\{\{(.*?)::(.*?)\}\}/g;
+    // Regex to match {{term::description}} - support multiline and ensure accents are handled
+    const regex = /\{\{([\s\S]*?)::([\s\S]*?)\}\}/g;
 
     const parts = [];
     let lastIndex = 0;
@@ -25,8 +25,8 @@ const GlossaryText = ({ content }: GlossaryTextProps) => {
 
         parts.push({
             type: 'glossary',
-            term: match[1],
-            description: match[2],
+            term: match[1].trim(),
+            description: match[2].trim(),
         });
 
         lastIndex = regex.lastIndex;
