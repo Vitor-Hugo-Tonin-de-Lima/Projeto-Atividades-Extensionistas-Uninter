@@ -7,6 +7,18 @@ interface Topico {
   subtitulo: string;
   conteudo: string;
   imagemUrl?: string;
+  pairs?: Pair[];
+}
+
+interface PairItem {
+  type: 'text' | 'image';
+  content: string;
+}
+
+interface Pair {
+  id: number;
+  itemA: PairItem;
+  itemB: PairItem;
 }
 
 interface Atividade {
@@ -49,7 +61,12 @@ function EditarAtividade() {
             id: s._id || idx,
             subtitulo: s.title,
             conteudo: s.instructions,
-            imagemUrl: s.imageUrl
+            imagemUrl: s.imageUrl,
+            pairs: s.pairs ? s.pairs.map((p: any, pIdx: number) => ({
+              id: pIdx,
+              itemA: { type: p.itemA?.type || 'text', content: p.itemA?.content || p.itemA || '' },
+              itemB: { type: p.itemB?.type || 'text', content: p.itemB?.content || p.itemB || '' }
+            })) : []
           })) : []
         };
         setAtividade(atividadeMapeada);
@@ -68,7 +85,8 @@ function EditarAtividade() {
       id: Date.now(),
       subtitulo: "Novo Tópico",
       conteudo: "",
-      imagemUrl: ""
+      imagemUrl: "",
+      pairs: []
     }];
     setAtividade({ ...atividade, topicos: novosTopicos });
     setAbaAtiva(atividade.topicos.length); // Vai para o novo
@@ -97,6 +115,43 @@ function EditarAtividade() {
     }
   };
 
+  const adicionarPar = () => {
+    if (!atividade) return;
+    const novosTopicos = [...atividade.topicos];
+    const topico = novosTopicos[abaAtiva];
+    if (!topico.pairs) topico.pairs = [];
+
+    topico.pairs.push({
+      id: Date.now(),
+      itemA: { type: 'text', content: '' },
+      itemB: { type: 'text', content: '' }
+    });
+
+    setAtividade({ ...atividade, topicos: novosTopicos });
+  };
+
+  const removerPar = (pairIndex: number) => {
+    if (!atividade) return;
+    const novosTopicos = [...atividade.topicos];
+    if (!novosTopicos[abaAtiva].pairs) return;
+
+    novosTopicos[abaAtiva].pairs = novosTopicos[abaAtiva].pairs!.filter((_, i) => i !== pairIndex);
+    setAtividade({ ...atividade, topicos: novosTopicos });
+  };
+
+  const atualizarPar = (pairIndex: number, side: 'itemA' | 'itemB', field: 'type' | 'content', value: string) => {
+    if (!atividade) return;
+    const novosTopicos = [...atividade.topicos];
+    const topico = novosTopicos[abaAtiva];
+    if (!topico.pairs) return;
+
+    const pair = topico.pairs[pairIndex];
+    // @ts-ignore
+    pair[side][field] = value;
+
+    setAtividade({ ...atividade, topicos: novosTopicos });
+  };
+
   const salvarAlteracoes = async () => {
     if (!atividade) return;
 
@@ -114,7 +169,11 @@ function EditarAtividade() {
         steps: atividade.topicos.map(t => ({
           title: t.subtitulo,
           instructions: t.conteudo,
-          imageUrl: t.imagemUrl
+          imageUrl: t.imagemUrl,
+          pairs: t.pairs ? t.pairs.map(p => ({
+            itemA: p.itemA,
+            itemB: p.itemB
+          })) : []
         }))
       };
 
@@ -225,9 +284,100 @@ function EditarAtividade() {
                 {topicoAtual.imagemUrl && <img src={topicoAtual.imagemUrl} className="w-full rounded" />}
               </div>
             </div>
+
+            {/* Seção do Jogo de Associação */}
+            <div className="mt-8 border-t pt-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-blue-900">Jogo de Associação (Opcional)</h3>
+                  <p className="text-sm text-gray-500">Crie pares de cartas que o aluno deve associar. Pode ser Texto ou Imagem.</p>
+                </div>
+                <button
+                  onClick={adicionarPar}
+                  className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold text-sm hover:bg-blue-200"
+                >
+                  + Adicionar Par
+                </button>
+              </div>
+
+              {topicoAtual.pairs && topicoAtual.pairs.length > 0 ? (
+                <div className="space-y-4">
+                  {topicoAtual.pairs.map((par, idx) => (
+                    <div key={par.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col md:flex-row gap-4 items-start relative">
+                      <button
+                        onClick={() => removerPar(idx)}
+                        className="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold"
+                        title="Remover Par"
+                      >
+                        x
+                      </button>
+
+                      {/* Lado A */}
+                      <div className="flex-1 w-full">
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-xs font-bold text-gray-500 uppercase">Lado A</label>
+                          <select
+                            value={par.itemA.type}
+                            onChange={(e) => atualizarPar(idx, 'itemA', 'type', e.target.value)}
+                            className="text-xs border rounded p-1"
+                          >
+                            <option value="text">Texto</option>
+                            <option value="image">Imagem</option>
+                          </select>
+                        </div>
+                        <input
+                          type="text"
+                          value={par.itemA.content}
+                          onChange={(e) => atualizarPar(idx, 'itemA', 'content', e.target.value)}
+                          placeholder={par.itemA.type === 'image' ? 'URL da imagem...' : 'Texto...'}
+                          className="w-full p-2 border rounded bg-white text-sm"
+                        />
+                        {par.itemA.type === 'image' && par.itemA.content && (
+                          <img src={par.itemA.content} className="h-20 mt-2 rounded object-cover border" />
+                        )}
+                      </div>
+
+                      <div className="hidden md:flex items-center justify-center self-center text-gray-300">
+                        ↔
+                      </div>
+
+                      {/* Lado B */}
+                      <div className="flex-1 w-full">
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-xs font-bold text-gray-500 uppercase">Lado B</label>
+                          <select
+                            value={par.itemB.type}
+                            onChange={(e) => atualizarPar(idx, 'itemB', 'type', e.target.value)}
+                            className="text-xs border rounded p-1"
+                          >
+                            <option value="text">Texto</option>
+                            <option value="image">Imagem</option>
+                          </select>
+                        </div>
+                        <input
+                          type="text"
+                          value={par.itemB.content}
+                          onChange={(e) => atualizarPar(idx, 'itemB', 'content', e.target.value)}
+                          placeholder={par.itemB.type === 'image' ? 'URL da imagem...' : 'Texto...'}
+                          className="w-full p-2 border rounded bg-white text-sm"
+                        />
+                        {par.itemB.type === 'image' && par.itemB.content && (
+                          <img src={par.itemB.content} className="h-20 mt-2 rounded object-cover border" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 bg-gray-50 rounded border border-dashed border-gray-300 text-gray-400">
+                  Nenhum jogo criado neste tópico. Clique em "Adicionar Par" para começar.
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </main>
+        )
+        }
+      </main >
 
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between">
         <button onClick={() => navigate('/atividades')} className="text-gray-500">Cancelar</button>
@@ -235,12 +385,14 @@ function EditarAtividade() {
       </footer>
 
       {/* Notificação Toast */}
-      {notification && (
-        <div className={`fixed bottom-20 right-4 px-6 py-3 rounded shadow-lg text-white font-bold transition-all transform z-50 ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-          {notification.msg}
-        </div>
-      )}
-    </div>
+      {
+        notification && (
+          <div className={`fixed bottom-20 right-4 px-6 py-3 rounded shadow-lg text-white font-bold transition-all transform z-50 ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            {notification.msg}
+          </div>
+        )
+      }
+    </div >
   );
 
 }

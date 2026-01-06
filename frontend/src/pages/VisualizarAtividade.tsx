@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import GlossaryText from '../components/GlossaryText';
+import AssociationGame from '../components/AssociationGame';
 
 
 interface Topico {
@@ -9,6 +10,7 @@ interface Topico {
     subtitulo: string;
     conteudo: string;
     imagemUrl?: string;
+    pairs?: any[];
 }
 
 interface Atividade {
@@ -38,7 +40,11 @@ function VisualizarAtividade() {
                         id: index, // O ID do step no backend é _id, mas aqui usamos index simples para seleção de aba
                         subtitulo: step.title,
                         conteudo: step.instructions,
-                        imagemUrl: step.imageUrl
+                        imagemUrl: step.imageUrl,
+                        pairs: step.pairs ? step.pairs.map((p: any) => ({
+                            itemA: { type: p.itemA?.type || 'text', content: p.itemA?.content || p.itemA || '' },
+                            itemB: { type: p.itemB?.type || 'text', content: p.itemB?.content || p.itemB || '' }
+                        })) : []
                     }))
                 };
 
@@ -109,6 +115,11 @@ function VisualizarAtividade() {
                         {/* Aqui usamos o nosso componente mágico */}
                         <GlossaryText content={topicoAtual.conteudo} />
                     </div>
+
+                    {/* Jogo de Associação */}
+                    {topicoAtual.pairs && topicoAtual.pairs.length > 0 && (
+                        <AssociationGame pairs={topicoAtual.pairs} />
+                    )}
                 </div>
             </main>
         </div>

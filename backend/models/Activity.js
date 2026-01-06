@@ -13,7 +13,17 @@ const stepSchema = new mongoose.Schema({
   codeExample: String,
 
   expectedResult: String,
-  hints: [String]
+  hints: [String],
+  pairs: [{
+    itemA: {
+      type: { type: String, enum: ['text', 'image'], default: 'text' },
+      content: String
+    },
+    itemB: {
+      type: { type: String, enum: ['text', 'image'], default: 'text' },
+      content: String
+    }
+  }]
 });
 
 const activitySchema = new mongoose.Schema({
